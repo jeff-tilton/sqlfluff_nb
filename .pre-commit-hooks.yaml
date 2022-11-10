@@ -1,5 +1,5 @@
--   id: sqlfluff-nb
-    name: sqlfluff-nb
+-   id: sqlfluff-nb-fix
+    name: sqlfluff-nb-fix
     description: SQLFluff wrapper for Azure Data Studio notebooks
     entry: sqlfluff_nb.main
     language: python
