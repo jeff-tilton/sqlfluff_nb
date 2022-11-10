@@ -99,10 +99,8 @@ def callback():
     """
 
 
-@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def fix(ctx: typer.Context, filename: Optional[str] = typer.Argument(None)):
+def format_file(filename: str, **kwargs) -> int:
     current_nb = read_nb(filename)
-    kwargs = get_kwargs(ctx)
     new_nb = fix_nb(current_nb, **kwargs)
     if current_nb == new_nb:
         return 0
@@ -110,6 +108,17 @@ def fix(ctx: typer.Context, filename: Optional[str] = typer.Argument(None)):
     with open(filename, "w", encoding="UTF-8") as f:
         f.write(nb_string)
     return 1
+
+
+@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
+def fix(ctx: typer.Context, filenames: Optional[list] = typer.Argument(None)):
+    kwargs = get_kwargs(ctx)
+    for filename in filenames:
+        try:
+            format_file(filename, **kwargs)
+        except:
+            LOGGER.error(f"{filename} did not format")
+            continue
 
 
 if __name__ == "__main__":
