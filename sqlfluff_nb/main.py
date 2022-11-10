@@ -7,9 +7,9 @@ import typer
 LOGGER = logging.getLogger(__name__)
 
 
-def read_nb(path: str) -> dict:
+def read_nb(filename: str) -> dict:
     """Reads Notebook as json string returns dict"""
-    with open(path) as f:
+    with open(filename) as f:
         nb = json.loads(f.read())
     return nb
 
@@ -98,14 +98,14 @@ def callback():
 
 
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def fix(path: str, ctx: typer.Context):
-    current_nb = read_nb(path)
+def fix(filename: str, ctx: typer.Context):
+    current_nb = read_nb(filename)
     kwargs = get_kwargs(ctx)
     new_nb = fix_nb(current_nb, **kwargs)
     if current_nb == new_nb:
         return 0
     nb_string = json.dumps(new_nb, indent=4)
-    with open(path, "w", encoding="UTF-8") as f:
+    with open(filename, "w", encoding="UTF-8") as f:
         f.write(nb_string)
     return 1
 
