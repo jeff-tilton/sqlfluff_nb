@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Optional
 
 import sqlfluff
 import typer
@@ -80,6 +81,7 @@ def fix_nb(nb: dict, **kwargs) -> dict:
 
 
 def get_kwargs(ctx: typer.Context) -> dict:
+    # TODO: fix this to work with flags
     l = ctx.args
     kwargs = {}
     for t in zip(l, l[1:]):
@@ -98,7 +100,7 @@ def callback():
 
 
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def fix(filename: str, ctx: typer.Context):
+def fix(ctx: typer.Context, filename: Optional[str] = typer.Argument(None)):
     current_nb = read_nb(filename)
     kwargs = get_kwargs(ctx)
     new_nb = fix_nb(current_nb, **kwargs)
