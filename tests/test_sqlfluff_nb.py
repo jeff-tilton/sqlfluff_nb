@@ -1,7 +1,7 @@
 import pytest
 
 from sqlfluff_nb import __version__
-from sqlfluff_nb.utils import fix_sql, get_cells, get_source, language_is_sql, read_nb
+from sqlfluff_nb.main import fix_sql, get_cells, get_source, language_is_sql, read_nb
 
 PATH = r"./test.ipynb"
 
