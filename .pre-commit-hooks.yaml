@@ -1,0 +1,7 @@
+-   id: sqlfluff-nb
+    name: sqlfluff-nb
+    description: SQLFluff wrapper for Azure Data Studio notebooks
+    entry: sqlfluff_nb.main
+    language: python
+    language_version: python3
+    files: ^.ipynb$
