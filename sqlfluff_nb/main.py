@@ -111,14 +111,13 @@ def format_file(filename: str, **kwargs) -> int:
 
 
 @app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def fix(ctx: typer.Context, filenames: Optional[list] = typer.Argument(None)):
+def fix(ctx: typer.Context, filename: Optional[str] = typer.Argument(None)):
     kwargs = get_kwargs(ctx)
-    for filename in filenames:
-        try:
-            format_file(filename, **kwargs)
-        except:
-            LOGGER.error(f"{filename} did not format")
-            continue
+    print(kwargs)
+    try:
+        format_file(filename, **kwargs)
+    except:
+        LOGGER.error(f"{filename} did not format")
 
 
 if __name__ == "__main__":
