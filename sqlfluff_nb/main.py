@@ -2,12 +2,10 @@ import argparse
 import json
 import logging
 import logging.config
-import sys
 from copy import deepcopy
-from typing import Optional, Sequence
+from typing import Sequence
 
 import sqlfluff
-import typer
 
 logging.config.dictConfig(
     {
@@ -94,25 +92,6 @@ def fix_nb(nb: dict, **kwargs) -> dict:
     return nb
 
 
-def get_kwargs(ctx: typer.Context) -> dict:
-    # TODO: fix this to work with flags
-    l = ctx.args
-    kwargs = {}
-    for t in zip(l, l[1:]):
-        kwargs.update({t[0].replace("-", ""): t[1]})
-    return kwargs
-
-
-app = typer.Typer()
-
-
-@app.callback()
-def callback():
-    """
-    SQLFluff wrapper for Notebooks
-    """
-
-
 def format_file(filename: str, **kwargs) -> int:
     current_nb = read_nb(filename)
     new_nb = fix_nb(deepcopy(current_nb), **kwargs)
@@ -125,16 +104,6 @@ def format_file(filename: str, **kwargs) -> int:
         f.write(nb_string)
         LOGGER.info(f"Writing changes to {filename}")
     return 1
-
-
-@app.command(context_settings={"allow_extra_args": True, "ignore_unknown_options": True})
-def fix(ctx: typer.Context, filename: Optional[str] = typer.Argument(None), level: int = 10):
-    logging.basicConfig(stream=sys.stderr, level=level, format=FORMAT)
-    kwargs = get_kwargs(ctx)
-    try:
-        format_file(filename, **kwargs)
-    except:
-        LOGGER.error(f"{filename} did not format", exc_info=True)
 
 
 def main(argv: Sequence[str] = None):
