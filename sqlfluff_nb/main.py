@@ -106,7 +106,7 @@ def format_file(filename: str, **kwargs) -> int:
     return 1
 
 
-def main(argv: Sequence[str] = None):
+def main(argv: Sequence[str] | None = None):
     parser = argparse.ArgumentParser()
     parser.add_argument("filenames", nargs="*")
     parser.add_argument("--dialect", default="ansi")
