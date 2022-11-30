@@ -6,12 +6,13 @@ authors = ["jeff-tilton"]
 readme = "README.md"
 
 [tool.poetry.scripts]
-sfnb = "sqlfluff_nb.main:app"
+sfnb = "sqlfluff_nb.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 typer = {extras = ["all"], version = "^0.7.0"}
 sqlfluff = "^1.4.1"
+pre-commit = "^2.20.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
