@@ -29,7 +29,7 @@ def get_cells(nb: dict) -> list:
     try:
         cells = nb["cells"]
     except KeyError as e:
-        LOGGER.error("Notebook does not contain cells")
+        LOGGER.error("Notebook does not contain cells", exc_info=True)
         raise KeyError() from e
     return cells
 
@@ -88,8 +88,8 @@ def fix_nb(nb: dict, **kwargs) -> dict:
             try:
                 source = fix_sql(current_source, **kwargs)
             except Exception as e:
-                LOGGER.warning("Could not fix source")
-
+                LOGGER.error("Could not fix source", exc_info=True)
+                continue
             cell["source"] = source
     return nb
 
