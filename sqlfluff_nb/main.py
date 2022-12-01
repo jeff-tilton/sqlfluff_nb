@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import logging.config
+import sys
 from copy import deepcopy
 from typing import Sequence
 
@@ -37,7 +38,7 @@ def cell_is_code(cell: dict) -> bool:
     try:
         cell_type = cell["cell_type"]
     except KeyError as e:
-        LOGGER.info("Cell does not contain type")
+        LOGGER.debug("Cell does not contain type")
         return False
     return cell_type == "code"
 
@@ -46,7 +47,7 @@ def language_is_sql(cell: dict) -> bool:
     try:
         metadata = cell["metadata"]
     except KeyError as e:
-        LOGGER.info("Cell does not contain metadata")
+        LOGGER.debug("Cell does not contain metadata")
         return False
     language = metadata.get("language")
     return language == "sql"
@@ -56,17 +57,18 @@ def get_source(cell: dict) -> list:
     try:
         source = cell["source"]
     except KeyError as e:
-        LOGGER.info("Cell does not contain source")
+        LOGGER.debug("Cell does not contain source")
         raise KeyError from e
     return source
 
 
-def fix_sql(source: list, **kwargs) -> str:
-    current_source = " ".join(source).replace("\r", " ")
-    # LOGGER.info(f"{current_source}")
+def fix_sql(current_source: list, **kwargs) -> str:
+    if isinstance(current_source, list):
+        current_source = " ".join(current_source).replace("\r", " ")
+    LOGGER.debug(f"{current_source}")
     try:
         new_source = sqlfluff.fix(current_source, **kwargs)
-        LOGGER.info(f"{new_source}")
+        LOGGER.debug(f"{new_source}")
     except Exception as e:
         LOGGER.error(f"Error fixing {current_source}", exc_info=True)
         raise e
@@ -78,13 +80,13 @@ def fix_nb(nb: dict, **kwargs) -> dict:
     for cell in cells:
         if cell_is_code(cell) and language_is_sql(cell):
             try:
-                source = get_source(cell)
-                LOGGER.debug(f"{source}")
+                current_source = get_source(cell)
+                LOGGER.debug(f"{current_source}")
             except Exception as e:
                 LOGGER.warning("Could not get source")
                 continue
             try:
-                source = fix_sql(source, **kwargs)
+                source = fix_sql(current_source, **kwargs)
             except Exception as e:
                 LOGGER.warning("Could not fix source")
 
@@ -110,11 +112,13 @@ def main(argv: Sequence[str] = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("filenames", nargs="*")
     parser.add_argument("--dialect", default="ansi")
+    parser.add_argument("--level", default=20, type=int)
     parser.add_argument("--rules", default=None, nargs="*")
     parser.add_argument("--exclude_rules", default=None, nargs="*")
     parser.add_argument("--config_path", default=None)
     args = parser.parse_args(argv)
-    kwargs = {k: v for k, v in vars(args).items() if k != "filenames"}
+    logging.basicConfig(stream=sys.stderr, level=args.level, format=FORMAT)
+    kwargs = {k: v for k, v in vars(args).items() if k not in ["filenames", "level"]}
     retv = 0
     for filename in args.filenames:
         retv |= format_file(filename, **kwargs)
