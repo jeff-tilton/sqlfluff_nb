@@ -4,4 +4,4 @@
     entry: sqlfluff_nb.main
     language: python
     language_version: python3
-    files: ^.ipynb$
+    files: \.ipynb$
