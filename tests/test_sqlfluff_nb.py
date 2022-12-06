@@ -1,6 +1,8 @@
 import json
+import os
 import shutil
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
@@ -15,7 +17,7 @@ from sqlfluff_nb.main import (
     read_nb,
 )
 
-PATH = r"./current_nb.ipynb"
+PATH = Path(__file__).parent
 
 
 def test_version():
@@ -23,11 +25,11 @@ def test_version():
 
 
 def test_read_nb():
-    assert type(read_nb(PATH)) is dict
+    assert type(read_nb(os.path.join(PATH, "current_nb.ipynb"))) is dict
 
 
 def test_get_cells():
-    nb = read_nb(PATH)
+    nb = read_nb(os.path.join(PATH, "current_nb.ipynb"))
     assert type(get_cells(nb)) is list
 
 
@@ -79,26 +81,29 @@ def test_fix_sql():
 
 
 def test_fix_nb():
-    with open("./current_nb.ipynb") as f:
+    with open(os.path.join(PATH, "current_nb.ipynb")) as f:
         current_nb = json.loads(f.read())
 
-    with open("./fixed_nb.ipynb") as f:
+    with open(os.path.join(PATH, "fixed_nb.ipynb")) as f:
         fixed_nb = json.loads(f.read())
     assert fixed_nb == fix_nb(deepcopy(current_nb))
 
 
 def test_format_file_equal_source():
-    assert format_file("./fixed_nb.ipynb") == 0
+    assert format_file(os.path.join(PATH, "fixed_nb.ipynb")) == 0
 
 
 def test_format_file_equal_source():
-    shutil.copyfile("./current_nb.ipynb", "./current_nb_copy.ipynb")
-    assert format_file("./current_nb_copy.ipynb") == 1
+    shutil.copyfile(
+        os.path.join(PATH, "current_nb.ipynb"),
+        os.path.join(PATH, "current_nb_copy.ipynb"),
+    )
+    assert format_file(os.path.join(PATH, "current_nb_copy.ipynb")) == 1
 
-    with open("./current_nb_copy.ipynb") as f:
+    with open(os.path.join(PATH, "current_nb_copy.ipynb")) as f:
         current_nb = json.loads(f.read())
 
-    with open("./fixed_nb.ipynb") as f:
+    with open(os.path.join(PATH, "fixed_nb.ipynb")) as f:
         fixed_nb = json.loads(f.read())
 
     assert current_nb == fixed_nb
