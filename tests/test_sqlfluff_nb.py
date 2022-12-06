@@ -1,9 +1,21 @@
+import json
+import shutil
+from copy import deepcopy
+
 import pytest
 
 from sqlfluff_nb import __version__
-from sqlfluff_nb.main import fix_sql, get_cells, get_source, language_is_sql, read_nb
+from sqlfluff_nb.main import (
+    fix_nb,
+    fix_sql,
+    format_file,
+    get_cells,
+    get_source,
+    language_is_sql,
+    read_nb,
+)
 
-PATH = r"./test.ipynb"
+PATH = r"./current_nb.ipynb"
 
 
 def test_version():
@@ -57,5 +69,36 @@ def test_fix_sql():
         "*, 1, blah as  fOO  from mySchema.myTable\n\nSelect\n    c as bar,\n",
         "    a + b + c as foo\n\rfrOm myschema.my_table\n",
     ]
-    expected_new_source = "select\n    column1,\n    column2 as myname\nfrom\n    myschema.atable\n\nselect\n    *,\n    1,\n    blah as foo\nfrom myschema.mytable\n\nselect\n    c as bar,\n    a + b + c as foo\nfrom myschema.my_table\n"
+    expected_new_source = [
+        "\rselect \ncolumn1, column2 As \rmyname",
+        "FROM\nmyschema.atable\n\nSeLEct",
+        "*, 1, blah as  fOO  from mySchema.myTable\n\nSelect\n    c as bar,\n",
+        "    a + b + c as foo\n\rfrOm myschema.my_table\n",
+    ]
     assert expected_new_source == fix_sql(source, dialect="tsql")
+
+
+def test_fix_nb():
+    with open("./current_nb.ipynb") as f:
+        current_nb = json.loads(f.read())
+
+    with open("./fixed_nb.ipynb") as f:
+        fixed_nb = json.loads(f.read())
+    assert fixed_nb == fix_nb(deepcopy(current_nb))
+
+
+def test_format_file_equal_source():
+    assert format_file("./fixed_nb.ipynb") == 0
+
+
+def test_format_file_equal_source():
+    shutil.copyfile("./current_nb.ipynb", "./current_nb_copy.ipynb")
+    assert format_file("./current_nb_copy.ipynb") == 1
+
+    with open("./current_nb_copy.ipynb") as f:
+        current_nb = json.loads(f.read())
+
+    with open("./fixed_nb.ipynb") as f:
+        fixed_nb = json.loads(f.read())
+
+    assert current_nb == fixed_nb
