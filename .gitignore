@@ -93,4 +93,3 @@ logs/
 data/
 explore.ipynb
 .pytest_cache
-*.ipynb
