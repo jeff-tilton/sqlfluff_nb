@@ -115,6 +115,8 @@ def format_file(filename: str, **kwargs) -> int:
     new_nb = fix_nb(deepcopy(current_nb), **kwargs)
     try:
         TestCase().assertDictEqual(current_nb, new_nb)
+        LOGGER.info(f"{filename} did not change")
+        return 0
     except AssertionError:
         LOGGER.info(f"Source did not match")
         nb_string = json.dumps(new_nb, indent=2)
@@ -122,8 +124,6 @@ def format_file(filename: str, **kwargs) -> int:
             f.write(nb_string)
             LOGGER.info(f"Writing changes to {filename}")
         return 1
-    LOGGER.info(f"{filename} did not change")
-    return 0
 
 
 def main(argv: Sequence[str] = None) -> int:
