@@ -3,19 +3,17 @@ name = "sqlfluff-nb"
 version = "0.1.0"
 description = ""
 authors = ["jeff-tilton"]
-readme = "README.md"
 
 [tool.poetry.scripts]
 sfnb = "sqlfluff_nb.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-typer = {extras = ["all"], version = "^0.7.0"}
-sqlfluff = "^1.4.1"
-pre-commit = "^2.20.0"
+sqlfluff = "^1.4.2"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pre-commit = "^2.20.0"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
