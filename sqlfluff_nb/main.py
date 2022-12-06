@@ -5,6 +5,7 @@ import logging.config
 import sys
 from copy import deepcopy
 from typing import Sequence
+from unittest import TestCase
 
 import sqlfluff
 
@@ -64,15 +65,30 @@ def get_source(cell: dict) -> list:
 
 def fix_sql(current_source: list, **kwargs) -> str:
     if isinstance(current_source, list):
-        current_source = " ".join(current_source).replace("\r", " ")
-    LOGGER.debug(f"{current_source}")
+        current_source_joined = "".join(current_source)
     try:
-        new_source = sqlfluff.fix(current_source, **kwargs)
-        LOGGER.debug(f"{new_source}")
+        fixed_source = sqlfluff.fix(current_source_joined, **kwargs)
+        LOGGER.debug(f"current_source_joined: {current_source_joined}")
+        LOGGER.debug(f"fixed_source: {fixed_source}")
+        if current_source_joined != fixed_source:
+            LOGGER.info(f"Sources not equal")
+            source = []
+            fixed_source_split = fixed_source.split("\n")
+            for i, v in enumerate(fixed_source_split):
+                if i != len(fixed_source_split) - 1:
+                    v += "\n"
+                else:
+                    v = v.rstrip()
+                source.append(v.rstrip(" "))
+            LOGGER.debug(f"{source}")
+        else:
+            LOGGER.info(f"Sources equal")
+            source = current_source
     except Exception as e:
         LOGGER.error(f"Error fixing {current_source}", exc_info=True)
         raise e
-    return new_source
+
+    return source
 
 
 def fix_nb(nb: dict, **kwargs) -> dict:
@@ -97,15 +113,17 @@ def fix_nb(nb: dict, **kwargs) -> dict:
 def format_file(filename: str, **kwargs) -> int:
     current_nb = read_nb(filename)
     new_nb = fix_nb(deepcopy(current_nb), **kwargs)
-
-    if current_nb == new_nb:
-        LOGGER.info(f"{filename} did not change")
-        return 0
-    nb_string = json.dumps(new_nb, indent=4)
-    with open(filename, "w", encoding="UTF-8") as f:
-        f.write(nb_string)
-        LOGGER.info(f"Writing changes to {filename}")
-    return 1
+    try:
+        TestCase().assertDictEqual(current_nb, new_nb)
+    except AssertionError:
+        LOGGER.info(f"Source did not match")
+        nb_string = json.dumps(new_nb, indent=2)
+        with open(filename, "w", encoding="UTF-8") as f:
+            f.write(nb_string)
+            LOGGER.info(f"Writing changes to {filename}")
+        return 1
+    LOGGER.info(f"{filename} did not change")
+    return 0
 
 
 def main(argv: Sequence[str] = None) -> int:
